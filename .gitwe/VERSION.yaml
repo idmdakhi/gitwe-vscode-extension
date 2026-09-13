@@ -1,23 +1,49 @@
-# .gitwe/version.yaml
-version: 0.3.0
-
+version: 1
+currentVersion: 0.40.2
+tagSource:
+  - branch
+  - config
+  - tag
+  - manual
+  - error
+tagTypes:
+  - release
+  - hotfix
+tagTargets:
+  - root
 tagPrefix: v
-format: "{{tagPrefix}}{{major}}.{{minor}}.{{patch}}" # {{#if prerelease}}-{{prerelease}}{{/if}}"
-
-# لیست base branch‌هایی که ادغام به آنها باعث ایجاد تگ می‌شود
-tag: ["release", "hotfix"]
-
-bumpRules:
-  major: []
-  minor: ["release"]
-  patch: ["hotfix"]
-  # prerelease: []
-
+format: "{{tagPrefix}}{{major}}.{{minor}}.{{patch}}{{#if prerelease}}-{{prerelease}}{{/if}}"
 annotated: true
-pushTags: false
 autoCommit: true
 commitMessage: "chore: bump version to {{version}}"
-# prerelease:
-#   enabled: false
-#   format: "{{type}}.{{number}}"
-#   types: ["alpha", "beta", "rc"]
+sign: false
+pushTags: false
+bumpRules:
+  major: []
+  minor:
+    - release
+  patch:
+    - hotfix
+  prerelease:
+    enabled: false
+    branchType: []
+    format: "{{type}}.{{number}}"
+    types:
+      - alpha
+      - beta
+      - rc
+targetVersion:
+  - file: package.json
+    path: version
+  - file: src/version.ts
+    pattern: export const version = "{{version}}";
+branchVersion:
+  patterns:
+    - release/v{{version}}
+    - release/{{version}}
+    - hotfix/v{{version}}
+    - hotfix/{{version}}
+    - v{{version}}
+    - "{{version}}"
+  stripPrefix: true
+  overrideBumpRules: true

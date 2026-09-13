@@ -1,0 +1,49 @@
+version: 1
+
+# Global settings
+default: origin
+fetch: [origin]
+push: [origin]
+autoFetch: true
+autoPush: false
+pushOptions:
+  forceWithLease: false
+  followTags: true
+
+# Base branch overrides
+baseOverrides:
+  main:
+    remote: origin
+    fetch: [origin]
+    autoFetch: true
+  develop:
+    remote: origin
+    fetch: [origin]
+    autoFetch: true
+    autoPush: true
+    pushOptions:
+      forceWithLease: true
+  # Global pushOptions for all base overrides (fallback)
+  pushOptions:
+    forceWithLease: false
+
+# Branch type overrides
+typeOverrides:
+  feature:
+    fetch: [origin]
+    push: [origin]
+    autoFetch: true
+  release:
+    push: [origin]
+    autoPush: true
+    pushOptions:
+      followTags: false
+  hotfix:
+    push: [origin]
+    autoFetch: false
+    pushOptions:
+      followTags: true
+  # Global pushOptions for all type overrides (fallback)
+  pushOptions:
+    forceWithLease: false
+    followTags: true

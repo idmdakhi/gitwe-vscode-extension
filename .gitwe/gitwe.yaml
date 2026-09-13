@@ -3,47 +3,82 @@ name: classic
 
 baseBranches:
   - name: main
-    aliases:
-      - master
+    aliases: [master]
     protected: true
   - name: develop
-    aliases:
-      - dev
+    aliases: [dev]
     base: main
     protected: true
 
 branchTypes:
   - name: feature
-    aliases:
-      - feat
-      - ftr
+    aliases: [feat, ftr]
     base: develop
-    target: develop
+    target: [develop]
     prefix: feature/
+
   - name: release
-    aliases:
-      - rls
-      - rels
+    aliases: [rels, rls]
     base: develop
-    target:
-      - main
-      - develop
+    target: [main, develop]
     prefix: release/
+
   - name: hotfix
-    aliases:
-      - hfix
-      - patch
+    aliases: [fix, hf]
     base: main
-    target:
-      - main
-      - develop
-    prefix: hotfix/
+    target: [main, develop]
+    prefix: fix/
+
+  - name: bugfix
+    aliases: [bug, bf]
+    base: develop
+    target: [develop]
+    prefix: bug/
+
   - name: support
-    aliases:
-      - lts
+    aliases: [lts]
     base: main
-    target: main
+    target: [main]
     prefix: support/
+
+merge:
+  strategy: merge
+  deleteOnFinish:
+    - bugfix
+    - hotfix
+    - feature
+    - release
+  squash:
+    enabled: false
+    default: false
+    branchTypes: [feature]
+
+hooks:
+  enabled: false
+  config: .gitwe/hook.yaml
+  path: .gitwe/hooks
+  inline:
+    pre-start: "echo 'Starting branch $GITWE_BRANCH'"
+    post-finish: "echo 'Finished $GITWE_BRANCH → $GITWE_TARGET'"
+
+versioning:
+  enabled: true
+  config: .gitwe/version.yaml
+  tagTypes: [release, hotfix]
+  tagTargets: [root] # root = no base on baseBranches
+  tagPrefix: v
+
+changelog:
+  enabled: false
+  config: .gitwe/changelog.yaml
+
+remote:
+  config: .gitwe/remote.yaml
+  default: origin
+  fetch: [origin]
+  autoFetch: true
+  push: [origin]
+  autoPush: false
 
 cli:
   enabled: true
@@ -53,33 +88,4 @@ cli:
     fs: finish feature
     rs: start release
     hf: start hotfix
-
-merge:
-  strategy: merge
-  branchTypes:
-  deleteOnFinish:
-    - feature
-    - release
-    - hotfix
-  squash:
-    branchTypes:
-      - feature
-    enabled: true
-    default: false
-
-hooks:
-  enabled: true
-  path: .gitwe/hooks
-
-versioning:
-  enabled: true
-  path: .gitwe/VERSION.yaml
-
-changelog:
-  enabled: false
-  path: .gitwe/CHANGELOG.yaml
-
-remote:
-  name: origin
-  autoPush: false
-  autoFetch: true
+    st: overview

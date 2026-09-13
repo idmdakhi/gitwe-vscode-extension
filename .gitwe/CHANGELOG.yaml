@@ -1,4 +1,19 @@
 # .gitwe/changelog.yaml
+version: 1
+
 enabled: false
-path: "CHANGELOG.md"
-template: ".gitwe/CHANGELOG.template.md"
+file: CHANGELOG.md # output file, relative to the repository root
+template:
+  path: ".gitwe/changelog.template"
+autoCommit: true # bundle into the same commit as versioning.targetVersion
+
+# Conventional-commit type -> "Keep a Changelog" section heading.
+# Types not listed here (chore, test, ci, build, style, ...) are skipped.
+commitTypes:
+  feat: Added
+  fix: Fixed
+  perf: Performance
+  revert: Reverted
+  docs: Documentation
+
+breakingChangeHeading: "Breaking Changes" # commits with "!" or a BREAKING CHANGE: footer
