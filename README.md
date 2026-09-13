@@ -30,21 +30,27 @@ you couldn't reproduce yourself on the command line.
 
 ## Requirements
 
-- [gitwe](https://github.com/idmdakhi/gitwe) itself: `npm install -g gitwe`
+- [gitwe](https://github.com/idmdakhi/gitwe) itself:
+  ```bash
+  npm install -g gitwe-ts
+  # OR
+  npm install -g @idmdakhi/gitwe
+  ```
   (or leave it uninstalled and let the extension fall back to `npx gitwe`).
 - A repository with a workflow definition (`.gitwe/gitwe.yaml`) — the
   Topic Branches view offers to run `gitwe init` if one isn't found.
 - Node.js ≥ 20 and `git` on `PATH` (gitwe's own requirements).
+- Compatible with **gitwe ≥ 0.40** (JSON envelope `schemaVersion: 1`).
 
 ## Settings
 
-| Setting | Default | Description |
-| --- | --- | --- |
-| `gitwe.binaryPath` | `""` | Explicit path to the `gitwe` executable. |
-| `gitwe.useNpxFallback` | `true` | Use `npx gitwe` when no global install is found. |
-| `gitwe.confirmDestructiveActions` | `true` | Confirm before delete / force-finish / abort. |
-| `gitwe.statusBar.enabled` | `true` | Show the current topic branch in the status bar. |
-| `gitwe.runInTerminal` | `false` | Reserved for a future terminal-transcript mode. |
+| Setting                           | Default | Description                                      |
+| --------------------------------- | ------- | ------------------------------------------------ |
+| `gitwe.binaryPath`                | `""`    | Explicit path to the `gitwe` executable.         |
+| `gitwe.useNpxFallback`            | `true`  | Use `npx gitwe` when no global install is found. |
+| `gitwe.confirmDestructiveActions` | `true`  | Confirm before delete / force-finish / abort.    |
+| `gitwe.statusBar.enabled`         | `true`  | Show the current topic branch in the status bar. |
+| `gitwe.runInTerminal`             | `false` | Reserved for a future terminal-transcript mode.  |
 
 ## Development
 

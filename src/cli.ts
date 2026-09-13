@@ -57,7 +57,9 @@ function config() {
  * or `npx gitwe` as a last resort. Cached for the life of the extension host
  * (a "Reload Window" is cheap enough if the user installs gitwe mid-session).
  */
-export async function resolveGitweBinary(cwd: string): Promise<{ command: string; prefixArgs: string[] }> {
+export async function resolveGitweBinary(
+  cwd: string,
+): Promise<{ command: string; prefixArgs: string[] }> {
   if (cachedBinary) return cachedBinary;
 
   const configured = config().get<string>("binaryPath", "").trim();
@@ -71,14 +73,17 @@ export async function resolveGitweBinary(cwd: string): Promise<{ command: string
     return cachedBinary;
   }
 
-  if (config().get<boolean>("useNpxFallback", true) && (await commandExists("npx", cwd))) {
+  if (
+    config().get<boolean>("useNpxFallback", true) &&
+    (await commandExists("npx", cwd))
+  ) {
     cachedBinary = { command: "npx", prefixArgs: ["--yes", "gitwe"] };
     return cachedBinary;
   }
 
   throw new GitweNotFoundError(
     "Could not find the `gitwe` executable on PATH, and no `gitwe.binaryPath` is configured. " +
-      "Install it with `npm install -g gitwe`, or set `gitwe.binaryPath` in Settings.",
+      "Install it with `npm install -g gitwe-ts` (or `@idmdakhi/gitwe`), or set `gitwe.binaryPath` in Settings.",
   );
 }
 
@@ -89,8 +94,10 @@ export function forgetResolvedBinary(): void {
 function commandExists(bin: string, cwd: string): Promise<boolean> {
   return new Promise((resolve) => {
     const probe = process.platform === "win32" ? "where" : "command -v";
-    cp.exec(`${probe} ${bin}`, { cwd, shell: process.platform === "win32" ? undefined : "/bin/sh" }, (err) =>
-      resolve(!err),
+    cp.exec(
+      `${probe} ${bin}`,
+      { cwd, shell: process.platform === "win32" ? undefined : "/bin/sh" },
+      (err) => resolve(!err),
     );
   });
 }
@@ -101,11 +108,26 @@ function commandExists(bin: string, cwd: string): Promise<boolean> {
  * well-formed error envelope, or {@link GitweNotFoundError} if gitwe itself
  * is missing.
  */
-export async function runGitweJson<T = unknown>(subcommand: string[], options: RunOptions): Promise<T> {
+export async function runGitweJson<T = unknown>(
+  subcommand: string[],
+  options: RunOptions,
+): Promise<T> {
   const { command, prefixArgs } = await resolveGitweBinary(options.cwd);
-  const args = [...prefixArgs, ...subcommand, ...(options.args ?? []), "--format", "json", "--no-color"];
+  const args = [
+    ...prefixArgs,
+    ...subcommand,
+    ...(options.args ?? []),
+    "--format",
+    "json",
+    "--no-color",
+  ];
 
-  const { stdout, stderr, exitCode } = await execFile(command, args, options.cwd, options.token);
+  const { stdout, stderr, exitCode } = await execFile(
+    command,
+    args,
+    options.cwd,
+    options.token,
+  );
 
   const envelope = tryParseEnvelope<T>(stdout);
   if (envelope) {
@@ -122,18 +144,37 @@ export async function runGitweJson<T = unknown>(subcommand: string[], options: R
 
   // gitwe couldn't even produce a JSON envelope (e.g. crashed before parsing args).
   if (exitCode !== 0) {
-    throw new GitweCliError(stderr.trim() || stdout.trim() || `gitwe ${subcommand.join(" ")} failed`, "UNKNOWN");
+    throw new GitweCliError(
+      stderr.trim() || stdout.trim() || `gitwe ${subcommand.join(" ")} failed`,
+      "UNKNOWN",
+    );
   }
   return undefined as T;
 }
 
 /** Run a gitwe subcommand without --format json (used for `log`/`graph`, which are text-first). */
-export async function runGitweText(subcommand: string[], options: RunOptions): Promise<string> {
+export async function runGitweText(
+  subcommand: string[],
+  options: RunOptions,
+): Promise<string> {
   const { command, prefixArgs } = await resolveGitweBinary(options.cwd);
-  const args = [...prefixArgs, ...subcommand, ...(options.args ?? []), "--no-color"];
-  const { stdout, stderr, exitCode } = await execFile(command, args, options.cwd, options.token);
+  const args = [
+    ...prefixArgs,
+    ...subcommand,
+    ...(options.args ?? []),
+    "--no-color",
+  ];
+  const { stdout, stderr, exitCode } = await execFile(
+    command,
+    args,
+    options.cwd,
+    options.token,
+  );
   if (exitCode !== 0) {
-    throw new GitweCliError(stderr.trim() || stdout.trim() || `gitwe ${subcommand.join(" ")} failed`, "UNKNOWN");
+    throw new GitweCliError(
+      stderr.trim() || stdout.trim() || `gitwe ${subcommand.join(" ")} failed`,
+      "UNKNOWN",
+    );
   }
   return stdout;
 }
@@ -143,7 +184,8 @@ function tryParseEnvelope<T>(stdout: string): GitweEnvelope<T> | undefined {
   if (!trimmed.startsWith("{")) return undefined;
   try {
     const parsed = JSON.parse(trimmed) as GitweEnvelope<T>;
-    if (parsed && parsed.schemaVersion === 1 && typeof parsed.ok === "boolean") return parsed;
+    if (parsed && parsed.schemaVersion === 1 && typeof parsed.ok === "boolean")
+      return parsed;
   } catch {
     // fall through
   }
@@ -205,18 +247,37 @@ function execFile(
       process.platform === "win32"
         ? cp.execFile(
             process.env.ComSpec || process.env.COMSPEC || "cmd.exe",
-            ["/d", "/s", "/c", [command, ...args].map(quoteWindowsArg).join(" ")],
-            { cwd, maxBuffer: 1024 * 1024 * 16, windowsVerbatimArguments: true },
+            [
+              "/d",
+              "/s",
+              "/c",
+              [command, ...args].map(quoteWindowsArg).join(" "),
+            ],
+            {
+              cwd,
+              maxBuffer: 1024 * 1024 * 16,
+              windowsVerbatimArguments: true,
+            },
             handleClose,
           )
-        : cp.execFile(command, args, { cwd, maxBuffer: 1024 * 1024 * 16 }, handleClose);
+        : cp.execFile(
+            command,
+            args,
+            { cwd, maxBuffer: 1024 * 1024 * 16 },
+            handleClose,
+          );
 
-    function handleClose(error: cp.ExecFileException | null, out: string, err: string): void {
+    function handleClose(
+      error: cp.ExecFileException | null,
+      out: string,
+      err: string,
+    ): void {
       stdout = out;
       stderr = err;
 
       const notFoundOnWindows =
-        process.platform === "win32" && /is not recognized as an internal or external command/i.test(err);
+        process.platform === "win32" &&
+        /is not recognized as an internal or external command/i.test(err);
 
       if ((error && error.code === "ENOENT") || notFoundOnWindows) {
         forgetResolvedBinary();
@@ -228,7 +289,8 @@ function execFile(
         );
         return;
       }
-      const exitCode = typeof error?.code === "number" ? error.code : error ? 1 : 0;
+      const exitCode =
+        typeof error?.code === "number" ? error.code : error ? 1 : 0;
       resolve({ stdout, stderr, exitCode });
     }
 
@@ -284,7 +346,8 @@ export interface GitweTypeDefinition {
   name: string;
   prefix: string;
   base: string;
-  target: string | string[] | null;
+  /** Always an array in gitwe ≥ 0.40 (toArray applied). */
+  target: string[];
   aliases: string[] | null;
 }
 
@@ -315,15 +378,24 @@ export class GitweRepo {
 
   list(type?: string, pattern?: string, token?: vscode.CancellationToken) {
     const args = [type, pattern].filter((v): v is string => !!v);
-    return runGitweJson<GitweListResult>(["list", ...args], { cwd: this.cwd, token });
+    return runGitweJson<GitweListResult>(["list", ...args], {
+      cwd: this.cwd,
+      token,
+    });
   }
 
   current(token?: vscode.CancellationToken) {
-    return runGitweJson<GitweCurrentResult>(["current"], { cwd: this.cwd, token });
+    return runGitweJson<GitweCurrentResult>(["current"], {
+      cwd: this.cwd,
+      token,
+    });
   }
 
   overview(token?: vscode.CancellationToken) {
-    return runGitweJson<GitweOverviewResult>(["overview"], { cwd: this.cwd, token });
+    return runGitweJson<GitweOverviewResult>(["overview"], {
+      cwd: this.cwd,
+      token,
+    });
   }
 
   types(token?: vscode.CancellationToken) {
@@ -332,27 +404,43 @@ export class GitweRepo {
 
   doctor(fix: boolean, token?: vscode.CancellationToken) {
     const args = fix ? ["--fix", "--yes"] : [];
-    return runGitweJson<GitweDoctorResult>(["doctor"], { cwd: this.cwd, args, token });
+    return runGitweJson<GitweDoctorResult>(["doctor"], {
+      cwd: this.cwd,
+      args,
+      token,
+    });
   }
 
   validate(token?: vscode.CancellationToken) {
-    return runGitweJson<{ valid: boolean; issues: Array<{ path: string; message: string }> }>(["validate"], {
+    return runGitweJson<{
+      valid: boolean;
+      issues: Array<{ path: string; message: string }>;
+    }>(["validate"], {
       cwd: this.cwd,
       token,
     });
   }
 
-  start(type: string, name: string, base: string | undefined, extraArgs: string[] = []) {
+  start(
+    type: string,
+    name: string,
+    base: string | undefined,
+    extraArgs: string[] = [],
+  ) {
     const args = [type, name, ...(base ? [base] : []), ...extraArgs];
     return runGitweJson(["start", ...args], { cwd: this.cwd });
   }
 
   finish(name: string | undefined, extraArgs: string[] = []) {
-    return runGitweJson(["finish", ...(name ? [name] : []), ...extraArgs], { cwd: this.cwd });
+    return runGitweJson(["finish", ...(name ? [name] : []), ...extraArgs], {
+      cwd: this.cwd,
+    });
   }
 
   update(name: string | undefined, extraArgs: string[] = []) {
-    return runGitweJson(["update", ...(name ? [name] : []), ...extraArgs], { cwd: this.cwd });
+    return runGitweJson(["update", ...(name ? [name] : []), ...extraArgs], {
+      cwd: this.cwd,
+    });
   }
 
   sync(extraArgs: string[] = []) {
@@ -364,11 +452,15 @@ export class GitweRepo {
   }
 
   publish(name: string | undefined, extraArgs: string[] = []) {
-    return runGitweJson(["publish", ...(name ? [name] : []), ...extraArgs], { cwd: this.cwd });
+    return runGitweJson(["publish", ...(name ? [name] : []), ...extraArgs], {
+      cwd: this.cwd,
+    });
   }
 
   deleteBranch(name: string | undefined, extraArgs: string[] = []) {
-    return runGitweJson(["delete", ...(name ? [name] : []), ...extraArgs], { cwd: this.cwd });
+    return runGitweJson(["delete", ...(name ? [name] : []), ...extraArgs], {
+      cwd: this.cwd,
+    });
   }
 
   rename(newName: string) {
@@ -376,19 +468,27 @@ export class GitweRepo {
   }
 
   track(typeOrBranch: string, name?: string) {
-    return runGitweJson(["track", typeOrBranch, ...(name ? [name] : [])], { cwd: this.cwd });
+    return runGitweJson(["track", typeOrBranch, ...(name ? [name] : [])], {
+      cwd: this.cwd,
+    });
   }
 
   checkout(typeOrBranch: string, name?: string) {
-    return runGitweJson(["checkout", typeOrBranch, ...(name ? [name] : [])], { cwd: this.cwd });
+    return runGitweJson(["checkout", typeOrBranch, ...(name ? [name] : [])], {
+      cwd: this.cwd,
+    });
   }
 
   tag(name: string | undefined, extraArgs: string[] = []) {
-    return runGitweJson(["tag", ...(name ? [name] : []), ...extraArgs], { cwd: this.cwd });
+    return runGitweJson(["tag", ...(name ? [name] : []), ...extraArgs], {
+      cwd: this.cwd,
+    });
   }
 
   rebase(name: string | undefined, extraArgs: string[] = []) {
-    return runGitweJson(["rebase", ...(name ? [name] : []), ...extraArgs], { cwd: this.cwd });
+    return runGitweJson(["rebase", ...(name ? [name] : []), ...extraArgs], {
+      cwd: this.cwd,
+    });
   }
 
   abort() {
@@ -396,11 +496,16 @@ export class GitweRepo {
   }
 
   init(extraArgs: string[]) {
-    return runGitweJson(["init"], { cwd: this.cwd, args: [...extraArgs, "--defaults"] });
+    return runGitweJson(["init"], {
+      cwd: this.cwd,
+      args: [...extraArgs, "--defaults"],
+    });
   }
 
   graph(root?: string) {
-    return runGitweText(["graph", ...(root ? ["--root", root] : [])], { cwd: this.cwd });
+    return runGitweText(["graph", ...(root ? ["--root", root] : [])], {
+      cwd: this.cwd,
+    });
   }
 
   log(extraArgs: string[] = []) {

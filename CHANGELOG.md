@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1
+
+- **Sync with gitwe 0.40.x**
+  - npx fallback now uses `gitwe` (the published package name) instead of the non-existent `gitwe` package.
+  - Install instructions and error messages updated to `npm install -g gitwe-ts` / `@idmdakhi/gitwe`.
+  - `package.json` repository URL corrected to point at `gitwe-vscode`.
+  - Documented compatibility with gitwe ≥ 0.40 (RFC-0004 JSON envelope).
+
 ## 0.2.0
 
 - **Dashboard redesign** — complete visual overhaul guided by [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)
