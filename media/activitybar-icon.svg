@@ -1,6 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <line x1="6" y1="3" x2="6" y2="15"></line>
-  <circle cx="18" cy="6" r="3"></circle>
-  <circle cx="6" cy="18" r="3"></circle>
-  <path d="M18 9a9 9 0 0 1-9 9"></path>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+  <!-- vertical main branch -->
+  <line x1="9" y1="3" x2="9" y2="21"/>
+  <!-- curved topic branch -->
+  <path d="M9 9c5 0 7-3 9-5"/>
+  <!-- nodes -->
+  <circle cx="9" cy="3" r="2" fill="currentColor" stroke="none"/>
+  <circle cx="9" cy="9" r="1.75" fill="currentColor" stroke="none"/>
+  <circle cx="18" cy="4" r="2" fill="currentColor" stroke="none"/>
+  <circle cx="9" cy="21" r="2" fill="currentColor" stroke="none"/>
 </svg>
