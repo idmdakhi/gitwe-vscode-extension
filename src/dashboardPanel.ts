@@ -138,8 +138,6 @@ export class GitweDashboardPanel {
 
   private renderHtml(): string {
     const nonce = String(Math.random()).slice(2);
-    // No script-src/style-src/font-src relaxation beyond the original: everything
-    // (icons, fonts, motion) is inlined so the strict CSP below doesn't change.
     const csp = [
       "default-src 'none'",
       `style-src 'unsafe-inline'`,
@@ -155,190 +153,433 @@ export class GitweDashboardPanel {
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>gitwe dashboard</title>
 <style>
-  /* ---- Design tokens: ui-ux-pro-max "Dark Mode (OLED)" developer-tool
-     system (bg #0f172a / card #1b2336 / accent #22c55e / JetBrains Mono +
-     IBM Plex Sans), layered on VS Code's own theme variables so the panel
-     still adapts to light themes instead of forcing dark mode. Density
-     tuned for a dashboard (compact 8–16px spacing scale). ---- */
+  /* ============================================================
+     UI/UX Pro Max — Developer-tool Dashboard (v2)
+     Style: Dark OLED + Soft Glassmorphism
+     Palette: Slate neutrals + Emerald accent (#22C55E)
+     Typography: IBM Plex Sans (UI) + JetBrains Mono (code)
+     Density: Dashboard (8–16px scale)
+     Motion: Subtle stagger + micro-interactions
+     Accessibility: 4.5:1 contrast, visible focus, reduced-motion
+     ============================================================ */
   :root {
     --gw-bg: var(--vscode-editor-background);
     --gw-fg: var(--vscode-editor-foreground);
-    --gw-card: var(--vscode-sideBar-background, #1b2336);
-    --gw-card-hover: color-mix(in srgb, var(--gw-card) 100%, var(--gw-fg) 4%);
+    --gw-card: color-mix(in srgb, var(--vscode-sideBar-background, #1b2336) 92%, transparent);
+    --gw-card-solid: var(--vscode-sideBar-background, #1b2336);
+    --gw-card-hover: color-mix(in srgb, var(--gw-card-solid) 100%, var(--gw-fg) 5%);
     --gw-muted-fg: var(--vscode-descriptionForeground, #94a3b8);
-    --gw-border: var(--vscode-widget-border, #475569);
+    --gw-border: color-mix(in srgb, var(--vscode-widget-border, #475569) 70%, transparent);
+    --gw-border-strong: var(--vscode-widget-border, #475569);
     --gw-accent: #22c55e;
     --gw-accent-fg: #0f172a;
-    --gw-accent-glow: color-mix(in srgb, var(--gw-accent) 35%, transparent);
+    --gw-accent-muted: color-mix(in srgb, var(--gw-accent) 18%, transparent);
+    --gw-accent-glow: color-mix(in srgb, var(--gw-accent) 28%, transparent);
     --gw-destructive: #ef4444;
-    --gw-warning: #f2b90c;
+    --gw-warning: #f59e0b;
     --gw-info: #38bdf8;
-    --gw-radius: 10px;
-    --gw-radius-sm: 6px;
-    --gw-space-1: 4px; --gw-space-2: 8px; --gw-space-3: 12px;
-    --gw-space-4: 16px; --gw-space-5: 20px; --gw-space-6: 24px;
-    --gw-font-ui: var(--vscode-font-family), "IBM Plex Sans", sans-serif;
-    --gw-font-mono: var(--vscode-editor-font-family), "JetBrains Mono", monospace;
+    --gw-radius: 12px;
+    --gw-radius-sm: 8px;
+    --gw-radius-xs: 6px;
+    --gw-space-1: 4px;
+    --gw-space-2: 8px;
+    --gw-space-3: 12px;
+    --gw-space-4: 16px;
+    --gw-space-5: 20px;
+    --gw-space-6: 24px;
+    --gw-space-8: 32px;
+    --gw-font-ui: var(--vscode-font-family), "IBM Plex Sans", system-ui, sans-serif;
+    --gw-font-mono: var(--vscode-editor-font-family), "JetBrains Mono", ui-monospace, monospace;
     --gw-ease: cubic-bezier(0.4, 0, 0.2, 1);
-    --gw-t-fast: 150ms; --gw-t-med: 220ms;
+    --gw-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --gw-t-fast: 140ms;
+    --gw-t-med: 220ms;
+    --gw-t-slow: 320ms;
+    --gw-shadow-sm: 0 1px 2px color-mix(in srgb, #000 12%, transparent);
+    --gw-shadow-md: 0 4px 16px -4px color-mix(in srgb, #000 22%, transparent);
+    --gw-shadow-lg: 0 12px 32px -8px color-mix(in srgb, #000 28%, transparent);
+    --gw-shadow-accent: 0 0 0 1px var(--gw-accent), 0 8px 24px -8px var(--gw-accent-glow);
   }
 
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
   }
 
   body {
     font-family: var(--gw-font-ui);
     color: var(--gw-fg);
     background: var(--gw-bg);
-    margin: 0;
     padding: var(--gw-space-6);
     font-size: 13px;
     line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
   }
 
-  h1 { font-size: 16px; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
+  /* ---------- Typography ---------- */
+  h1 {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
   h2 {
-    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
-    color: var(--gw-muted-fg); margin: 0 0 var(--gw-space-3);
-    font-weight: 600; display: flex; align-items: center; gap: var(--gw-space-2);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--gw-muted-fg);
+    margin: 0 0 var(--gw-space-3);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--gw-space-2);
   }
-  h2 .icon { color: var(--gw-muted-fg); }
+  h2 .icon { color: var(--gw-muted-fg); opacity: 0.85; }
 
-  .branch-name { font-family: var(--gw-font-mono); }
+  .branch-name { font-family: var(--gw-font-mono); font-size: 12.5px; }
 
-  .icon { width: 14px; height: 14px; flex-shrink: 0; display: inline-block; vertical-align: -2px; }
-  .icon svg { width: 100%; height: 100%; }
+  /* ---------- Icons ---------- */
+  .icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon svg { width: 100%; height: 100%; display: block; }
 
+  /* ---------- Header ---------- */
   header {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    margin-bottom: var(--gw-space-6); gap: var(--gw-space-4); flex-wrap: wrap;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--gw-space-8);
+    gap: var(--gw-space-4);
+    flex-wrap: wrap;
   }
-  .title-row { display: flex; align-items: center; gap: var(--gw-space-2); }
-  .title-row .icon { width: 18px; height: 18px; color: var(--gw-accent); }
+  .title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--gw-space-2);
+  }
+  .title-row .icon {
+    width: 20px;
+    height: 20px;
+    color: var(--gw-accent);
+  }
   .subtitle {
-    color: var(--gw-muted-fg); font-size: 12px; margin-top: 3px;
-    display: flex; align-items: center; gap: var(--gw-space-1) / 2;
+    color: var(--gw-muted-fg);
+    font-size: 12px;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
-  .subtitle .icon { width: 12px; height: 12px; margin-right: 4px; color: var(--gw-accent); }
+  .subtitle .icon { width: 13px; height: 13px; color: var(--gw-accent); }
   .subtitle.detached .icon { color: var(--gw-warning); }
 
-  .actions { display: flex; gap: var(--gw-space-2); flex-wrap: wrap; }
+  .actions {
+    display: flex;
+    gap: var(--gw-space-2);
+    flex-wrap: wrap;
+    align-items: center;
+  }
 
+  /* ---------- Buttons ---------- */
   button {
     font-family: inherit;
     font-size: 12px;
+    font-weight: 500;
     border-radius: var(--gw-radius-sm);
-    border: 1px solid var(--gw-border);
-    background: var(--vscode-button-secondaryBackground, transparent);
+    border: 1px solid var(--gw-border-strong);
+    background: color-mix(in srgb, var(--vscode-button-secondaryBackground, transparent) 80%, transparent);
     color: var(--vscode-button-secondaryForeground, var(--gw-fg));
-    padding: 6px 12px;
+    padding: 7px 13px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    transition: background-color var(--gw-t-fast) var(--gw-ease),
+    transition:
+      background-color var(--gw-t-fast) var(--gw-ease),
       border-color var(--gw-t-fast) var(--gw-ease),
-      transform var(--gw-t-fast) var(--gw-ease),
+      transform var(--gw-t-fast) var(--gw-ease-out),
       box-shadow var(--gw-t-fast) var(--gw-ease);
   }
-  button:hover { border-color: var(--gw-accent); transform: translateY(-1px); }
+  button:hover {
+    border-color: var(--gw-accent);
+    background: var(--gw-accent-muted);
+    transform: translateY(-1px);
+  }
   button:active { transform: translateY(0); }
-  button:focus-visible { outline: 2px solid var(--gw-accent); outline-offset: 2px; }
+  button:focus-visible {
+    outline: 2px solid var(--gw-accent);
+    outline-offset: 2px;
+  }
   button.primary {
     background: var(--gw-accent);
     color: var(--gw-accent-fg);
     border-color: var(--gw-accent);
     font-weight: 600;
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--gw-accent) 40%, transparent);
   }
-  button.primary:hover { filter: brightness(1.08); box-shadow: 0 0 0 4px var(--gw-accent-glow); }
-  button.small { padding: 3px 9px; font-size: 11px; }
-  button.icon-btn { padding: 6px; }
+  button.primary:hover {
+    filter: brightness(1.07);
+    box-shadow: 0 0 0 3px var(--gw-accent-glow), 0 4px 12px -2px var(--gw-accent-glow);
+  }
+  button.small {
+    padding: 4px 10px;
+    font-size: 11px;
+    border-radius: var(--gw-radius-xs);
+  }
+  button.icon-btn {
+    padding: 7px;
+    min-width: 32px;
+    min-height: 32px;
+    justify-content: center;
+  }
   button.icon-btn .icon { margin: 0; }
-  #refresh-btn.spinning .icon svg { animation: gw-spin 700ms linear; }
+  #refresh-btn.spinning .icon svg {
+    animation: gw-spin 650ms linear;
+  }
   @keyframes gw-spin { to { transform: rotate(360deg); } }
 
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--gw-space-3); margin-bottom: var(--gw-space-6); }
+  /* ---------- Grid & Cards ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--gw-space-3);
+    margin-bottom: var(--gw-space-6);
+  }
 
   .card {
     background: var(--gw-card);
     border: 1px solid var(--gw-border);
     border-radius: var(--gw-radius);
     padding: var(--gw-space-4);
-    transition: border-color var(--gw-t-med) var(--gw-ease), box-shadow var(--gw-t-med) var(--gw-ease), transform var(--gw-t-med) var(--gw-ease);
+    box-shadow: var(--gw-shadow-sm);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition:
+      border-color var(--gw-t-med) var(--gw-ease),
+      box-shadow var(--gw-t-med) var(--gw-ease),
+      transform var(--gw-t-med) var(--gw-ease-out),
+      background var(--gw-t-med) var(--gw-ease);
   }
-  .stat-card { position: relative; overflow: hidden; }
-  .stat-card:hover { border-color: var(--gw-accent); box-shadow: 0 0 0 1px var(--gw-accent), 0 8px 20px -12px var(--gw-accent-glow); transform: translateY(-2px); }
-  .stat-card .icon { color: var(--gw-accent); width: 16px; height: 16px; margin-bottom: var(--gw-space-2); }
-  .stat-card .value { font-size: 22px; font-weight: 700; font-family: var(--gw-font-mono); line-height: 1.1; }
-  .stat-card .label { color: var(--gw-muted-fg); font-size: 11px; margin-top: 4px; }
-  .stat-card .label.branch-name { text-transform: none; letter-spacing: 0; }
 
-  section { margin-bottom: var(--gw-space-6); animation: gw-fade-in var(--gw-t-med) var(--gw-ease) both; }
-  @keyframes gw-fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .stat-card {
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gw-type-color, var(--gw-accent)), transparent);
+    opacity: 0;
+    transition: opacity var(--gw-t-med) var(--gw-ease);
+  }
+  .stat-card:hover {
+    border-color: color-mix(in srgb, var(--gw-type-color, var(--gw-accent)) 55%, var(--gw-border));
+    box-shadow: var(--gw-shadow-accent);
+    transform: translateY(-2px);
+    background: var(--gw-card-hover);
+  }
+  .stat-card:hover::before { opacity: 1; }
+  .stat-card .icon {
+    color: var(--gw-type-color, var(--gw-accent));
+    width: 16px;
+    height: 16px;
+    margin-bottom: var(--gw-space-2);
+  }
+  .stat-card .value {
+    font-size: 24px;
+    font-weight: 700;
+    font-family: var(--gw-font-mono);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .stat-card .label {
+    color: var(--gw-muted-fg);
+    font-size: 11px;
+    margin-top: 5px;
+  }
+  .stat-card .label.branch-name {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 11.5px;
+  }
 
+  /* ---------- Sections ---------- */
+  section {
+    margin-bottom: var(--gw-space-8);
+    animation: gw-fade-up var(--gw-t-slow) var(--gw-ease-out) both;
+  }
+  section:nth-of-type(1) { animation-delay: 0ms; }
+  section:nth-of-type(2) { animation-delay: 40ms; }
+  section:nth-of-type(3) { animation-delay: 80ms; }
+
+  @keyframes gw-fade-up {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---------- Doctor findings ---------- */
   .finding {
-    display: flex; align-items: flex-start; gap: var(--gw-space-2);
-    padding: var(--gw-space-2) 2px; border-bottom: 1px solid var(--gw-border); font-size: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--gw-space-2);
+    padding: var(--gw-space-3) var(--gw-space-1);
+    border-bottom: 1px solid var(--gw-border);
+    font-size: 12.5px;
+    line-height: 1.45;
   }
   .finding:last-child { border-bottom: none; }
-  .finding .icon { margin-top: 1px; }
+  .finding .icon { margin-top: 2px; }
   .finding.ok .icon { color: var(--gw-accent); }
   .finding.warning .icon { color: var(--gw-warning); }
   .finding.error .icon { color: var(--gw-destructive); }
   .finding .fix-badge {
-    color: var(--gw-accent); font-size: 10px; font-weight: 600; border: 1px solid var(--gw-accent);
-    border-radius: 999px; padding: 1px 8px; margin-inline-start: auto; flex-shrink: 0;
-    background: color-mix(in srgb, var(--gw-accent) 12%, transparent);
+    color: var(--gw-accent);
+    font-size: 10px;
+    font-weight: 600;
+    border: 1px solid color-mix(in srgb, var(--gw-accent) 50%, transparent);
+    border-radius: 999px;
+    padding: 2px 9px;
+    margin-inline-start: auto;
+    flex-shrink: 0;
+    background: var(--gw-accent-muted);
   }
-  .doctor-ok { display: flex; align-items: center; gap: var(--gw-space-2); color: var(--gw-accent); padding: var(--gw-space-2) 2px; font-weight: 600; }
+  .doctor-ok {
+    display: flex;
+    align-items: center;
+    gap: var(--gw-space-2);
+    color: var(--gw-accent);
+    padding: var(--gw-space-3) var(--gw-space-1);
+    font-weight: 600;
+    font-size: 13px;
+  }
 
-  ul.branch-list { list-style: none; margin: 0; padding: 0; }
+  /* ---------- Branch list ---------- */
+  ul.branch-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
   ul.branch-list li {
-    display: flex; align-items: center; gap: var(--gw-space-2);
-    padding: var(--gw-space-2) var(--gw-space-2); border-radius: var(--gw-radius-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--gw-space-2);
+    padding: 8px 10px;
+    border-radius: var(--gw-radius-sm);
     transition: background-color var(--gw-t-fast) var(--gw-ease);
-    animation: gw-fade-in var(--gw-t-med) var(--gw-ease) both;
+    animation: gw-fade-up var(--gw-t-med) var(--gw-ease-out) both;
   }
-  ul.branch-list li:hover { background: color-mix(in srgb, var(--gw-fg) 6%, transparent); }
+  ul.branch-list li:hover {
+    background: color-mix(in srgb, var(--gw-fg) 5%, transparent);
+  }
+  ul.branch-list li.is-current {
+    background: var(--gw-accent-muted);
+    border: 1px solid color-mix(in srgb, var(--gw-accent) 30%, transparent);
+  }
+  ul.branch-list li.is-current .branch-name {
+    color: var(--gw-accent);
+    font-weight: 600;
+  }
   ul.branch-list .branch-icon { color: var(--gw-muted-fg); }
+  ul.branch-list li.is-current .branch-icon { color: var(--gw-accent); }
+
   ul.branch-list .type-badge {
-    font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600;
-    border-radius: 4px; padding: 2px 6px; flex-shrink: 0;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    border-radius: 5px;
+    padding: 2px 7px;
+    flex-shrink: 0;
     color: var(--gw-type-color, var(--gw-muted-fg));
-    border: 1px solid color-mix(in srgb, var(--gw-type-color, var(--gw-border)) 55%, transparent);
-    background: color-mix(in srgb, var(--gw-type-color, var(--gw-border)) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--gw-type-color, var(--gw-border)) 50%, transparent);
+    background: color-mix(in srgb, var(--gw-type-color, var(--gw-border)) 12%, transparent);
   }
-  ul.branch-list .spacer { flex: 1; }
-  ul.branch-list li:not(:hover) .row-actions { opacity: 0; pointer-events: none; }
-  .row-actions { display: flex; gap: 6px; transition: opacity var(--gw-t-fast) var(--gw-ease); }
-  @media (hover: none) { .row-actions { opacity: 1; pointer-events: auto; } }
+  ul.branch-list .spacer { flex: 1; min-width: 8px; }
+  ul.branch-list li:not(:hover) .row-actions {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .row-actions {
+    display: flex;
+    gap: 6px;
+    transition: opacity var(--gw-t-fast) var(--gw-ease);
+  }
+  @media (hover: none) {
+    .row-actions { opacity: 1; pointer-events: auto; }
+  }
 
+  /* ---------- Empty state ---------- */
   .empty-state {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: var(--gw-space-2); color: var(--gw-muted-fg); padding: var(--gw-space-6) var(--gw-space-4); text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--gw-space-2);
+    color: var(--gw-muted-fg);
+    padding: var(--gw-space-8) var(--gw-space-4);
+    text-align: center;
   }
-  .empty-state .icon { width: 24px; height: 24px; color: var(--gw-muted-fg); opacity: 0.7; }
-  .empty-state .hint { font-size: 12px; }
+  .empty-state .icon {
+    width: 28px;
+    height: 28px;
+    color: var(--gw-muted-fg);
+    opacity: 0.55;
+    margin-bottom: 4px;
+  }
+  .empty-state .hint { font-size: 12px; opacity: 0.85; }
 
-  /* Skeleton loading */
-  .skel { border-radius: var(--gw-radius-sm); background: linear-gradient(90deg, var(--gw-border) 0%, color-mix(in srgb, var(--gw-border) 60%, var(--gw-card)) 50%, var(--gw-border) 100%); background-size: 200% 100%; animation: gw-shimmer 1.4s ease-in-out infinite; }
-  @keyframes gw-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-  .skel-card { height: 62px; }
-  .skel-row { height: 30px; margin-bottom: var(--gw-space-2); }
-  .skel-line { height: 12px; }
+  /* ---------- Skeleton ---------- */
+  .skel {
+    border-radius: var(--gw-radius-sm);
+    background: linear-gradient(
+      90deg,
+      var(--gw-border) 0%,
+      color-mix(in srgb, var(--gw-border) 50%, var(--gw-card-solid)) 50%,
+      var(--gw-border) 100%
+    );
+    background-size: 200% 100%;
+    animation: gw-shimmer 1.5s ease-in-out infinite;
+  }
+  @keyframes gw-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .skel-card { height: 72px; }
+  .skel-row  { height: 32px; margin-bottom: var(--gw-space-2); }
 
+  /* ---------- Banner ---------- */
   .banner {
-    display: flex; align-items: center; gap: var(--gw-space-2);
-    color: var(--gw-muted-fg); padding: var(--gw-space-3) var(--gw-space-4);
-    border-radius: var(--gw-radius); border: 1px solid var(--gw-border); background: var(--gw-card);
+    display: flex;
+    align-items: center;
+    gap: var(--gw-space-2);
+    color: var(--gw-muted-fg);
+    padding: var(--gw-space-3) var(--gw-space-4);
+    border-radius: var(--gw-radius);
+    border: 1px solid var(--gw-border);
+    background: var(--gw-card);
+    box-shadow: var(--gw-shadow-sm);
+    margin-top: var(--gw-space-4);
   }
   .banner .icon { width: 16px; height: 16px; }
-  .banner.error { color: var(--gw-destructive); border-color: color-mix(in srgb, var(--gw-destructive) 45%, var(--gw-border)); }
+  .banner.error {
+    color: var(--gw-destructive);
+    border-color: color-mix(in srgb, var(--gw-destructive) 40%, var(--gw-border));
+    background: color-mix(in srgb, var(--gw-destructive) 6%, var(--gw-card));
+  }
   .banner.error .icon { color: var(--gw-destructive); }
-  .hidden { display: none; }
+  .hidden { display: none !important; }
 </style>
 </head>
 <body>
@@ -348,33 +589,62 @@ export class GitweDashboardPanel {
         <span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.gitBranch}</span>
         <h1 id="workflow-name">gitwe</h1>
       </div>
-      <div class="subtitle" id="current-branch"><span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.clock}</span>loading…</div>
+      <div class="subtitle" id="current-branch">
+        <span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.clock}</span>
+        loading…
+      </div>
     </div>
     <div class="actions">
-      <button class="primary" data-cmd="gitwe.start"><span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.play}</span>Start branch</button>
-      <button data-cmd="gitwe.finishCurrent"><span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.checkCircle}</span>Finish current</button>
-      <button data-cmd="gitwe.sync"><span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.sync}</span>Sync</button>
-      <button data-cmd="gitwe.doctorFix"><span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.wrench}</span>Doctor --fix</button>
-      <button id="refresh-btn" class="icon-btn" title="Refresh" aria-label="Refresh"><span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.refresh}</span></button>
+      <button class="primary" data-cmd="gitwe.start">
+        <span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.play}</span>
+        Start branch
+      </button>
+      <button data-cmd="gitwe.finishCurrent">
+        <span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.checkCircle}</span>
+        Finish current
+      </button>
+      <button data-cmd="gitwe.sync">
+        <span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.sync}</span>
+        Sync
+      </button>
+      <button data-cmd="gitwe.doctorFix">
+        <span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.wrench}</span>
+        Doctor --fix
+      </button>
+      <button id="refresh-btn" class="icon-btn" title="Refresh" aria-label="Refresh">
+        <span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.refresh}</span>
+      </button>
     </div>
   </header>
 
   <section aria-labelledby="overview-heading">
-    <h2 id="overview-heading"><span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.grid}</span>Overview</h2>
+    <h2 id="overview-heading">
+      <span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.grid}</span>
+      Overview
+    </h2>
     <div class="grid" id="overview-grid" aria-busy="true">
-      <div class="card skel skel-card"></div><div class="card skel skel-card"></div><div class="card skel skel-card"></div>
+      <div class="card skel skel-card"></div>
+      <div class="card skel skel-card"></div>
+      <div class="card skel skel-card"></div>
     </div>
   </section>
 
   <section aria-labelledby="health-heading">
-    <h2 id="health-heading"><span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.stethoscope}</span>Health (gitwe doctor)</h2>
+    <h2 id="health-heading">
+      <span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.stethoscope}</span>
+      Health (gitwe doctor)
+    </h2>
     <div class="card" id="doctor-card" aria-busy="true">
-      <div class="skel skel-row"></div><div class="skel skel-row"></div>
+      <div class="skel skel-row"></div>
+      <div class="skel skel-row"></div>
     </div>
   </section>
 
   <section aria-labelledby="branches-heading">
-    <h2 id="branches-heading"><span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.list}</span>Topic branches</h2>
+    <h2 id="branches-heading">
+      <span class="icon" aria-hidden="true">${GitweDashboardPanel.ICONS.list}</span>
+      Topic branches
+    </h2>
     <div class="card">
       <ul class="branch-list" id="branch-list" aria-busy="true">
         <li><div class="skel skel-row" style="flex:1"></div></li>
@@ -400,46 +670,79 @@ export class GitweDashboardPanel {
     inbox: ${JSON.stringify(GitweDashboardPanel.ICONS.inbox)},
     hash: ${JSON.stringify(GitweDashboardPanel.ICONS.hash)},
   };
-  const TYPE_COLORS = { feature: '#38bdf8', release: '#a78bfa', hotfix: '#ef4444', bugfix: '#f2b90c', chore: '#94a3b8', support: '#22c55e' };
-  function typeColor(type) { return TYPE_COLORS[String(type).toLowerCase()] || '#94a3b8'; }
-  function severityIcon(sev) { return sev === 'error' ? ICONS.xCircle : sev === 'warning' ? ICONS.warning : ICONS.check; }
+
+  const TYPE_COLORS = {
+    feature: '#38bdf8',
+    release: '#a78bfa',
+    hotfix: '#ef4444',
+    bugfix: '#f59e0b',
+    chore: '#94a3b8',
+    support: '#22c55e',
+  };
+
+  function typeColor(type) {
+    return TYPE_COLORS[String(type).toLowerCase()] || '#94a3b8';
+  }
+
+  function severityIcon(sev) {
+    return sev === 'error' ? ICONS.xCircle
+         : sev === 'warning' ? ICONS.warning
+         : ICONS.check;
+  }
 
   document.querySelectorAll('button[data-cmd]').forEach((btn) => {
-    btn.addEventListener('click', () => vscode.postMessage({ type: 'runCommand', command: btn.dataset.cmd }));
+    btn.addEventListener('click', () =>
+      vscode.postMessage({ type: 'runCommand', command: btn.dataset.cmd })
+    );
   });
+
   $('#refresh-btn').addEventListener('click', () => {
     $('#refresh-btn').classList.add('spinning');
-    setTimeout(() => $('#refresh-btn').classList.remove('spinning'), 700);
+    setTimeout(() => $('#refresh-btn').classList.remove('spinning'), 650);
     vscode.postMessage({ type: 'refresh' });
   });
 
   function showBanner(text, isError) {
     const el = $('#banner');
-    el.innerHTML = '<span class="icon" aria-hidden="true">' + (isError ? ICONS.xCircle : ICONS.info) + '</span><span>' + text + '</span>';
+    el.innerHTML =
+      '<span class="icon" aria-hidden="true">' +
+      (isError ? ICONS.xCircle : ICONS.info) +
+      '</span><span>' + text + '</span>';
     el.classList.toggle('error', !!isError);
     el.classList.remove('hidden');
   }
-  function hideBanner() { $('#banner').classList.add('hidden'); }
+
+  function hideBanner() {
+    $('#banner').classList.add('hidden');
+  }
 
   function renderOverview(overview) {
     $('#workflow-name').textContent = 'gitwe — ' + overview.workflowName;
+
     const branchEl = $('#current-branch');
     if (overview.currentBranch) {
       branchEl.classList.remove('detached');
-      branchEl.innerHTML = '<span class="icon" aria-hidden="true">' + ICONS.gitBranch + '</span>On <span class="branch-name" style="margin-left:3px">' + overview.currentBranch + '</span>';
+      branchEl.innerHTML =
+        '<span class="icon" aria-hidden="true">' + ICONS.gitBranch + '</span>' +
+        'On <span class="branch-name" style="margin-left:4px">' +
+        overview.currentBranch + '</span>';
     } else {
       branchEl.classList.add('detached');
-      branchEl.innerHTML = '<span class="icon" aria-hidden="true">' + ICONS.warning + '</span>Detached HEAD';
+      branchEl.innerHTML =
+        '<span class="icon" aria-hidden="true">' + ICONS.warning + '</span>' +
+        'Detached HEAD';
     }
 
     const grid = $('#overview-grid');
     grid.setAttribute('aria-busy', 'false');
     grid.innerHTML = '';
+
     const baseCard = document.createElement('div');
     baseCard.className = 'card stat-card';
     baseCard.innerHTML =
       '<span class="icon" aria-hidden="true">' + ICONS.hash + '</span>' +
-      '<div class="value">' + overview.baseBranches.length + '</div><div class="label">Base branches</div>';
+      '<div class="value">' + overview.baseBranches.length + '</div>' +
+      '<div class="label">Base branches</div>';
     grid.appendChild(baseCard);
 
     for (const t of overview.branchTypes) {
@@ -447,9 +750,11 @@ export class GitweDashboardPanel {
       card.className = 'card stat-card';
       card.style.setProperty('--gw-type-color', typeColor(t.type));
       card.innerHTML =
-        '<span class="icon" aria-hidden="true" style="color:var(--gw-type-color)">' + ICONS.gitBranch + '</span>' +
+        '<span class="icon" aria-hidden="true" style="color:var(--gw-type-color)">' +
+        ICONS.gitBranch + '</span>' +
         '<div class="value">' + t.count + '</div>' +
-        '<div class="label branch-name">' + t.type + ' \u2192 ' + formatTarget(t.target) + '</div>';
+        '<div class="label branch-name">' + t.type + ' → ' +
+        formatTarget(t.target) + '</div>';
       grid.appendChild(card);
     }
   }
@@ -458,10 +763,16 @@ export class GitweDashboardPanel {
     const card = $('#doctor-card');
     card.setAttribute('aria-busy', 'false');
     card.innerHTML = '';
+
     if (!doctor.findings.length) {
-      card.innerHTML = '<div class="doctor-ok"><span class="icon" aria-hidden="true">' + ICONS.checkCircle + '</span>All checks passed \u2014 workflow is healthy.</div>';
+      card.innerHTML =
+        '<div class="doctor-ok">' +
+        '<span class="icon" aria-hidden="true">' + ICONS.checkCircle + '</span>' +
+        'All checks passed — workflow is healthy.' +
+        '</div>';
       return;
     }
+
     for (const f of doctor.findings) {
       const row = document.createElement('div');
       row.className = 'finding ' + f.severity;
@@ -473,49 +784,66 @@ export class GitweDashboardPanel {
     }
   }
 
-  function renderBranches(list) {
+  function renderBranches(list, currentBranch) {
     const ul = $('#branch-list');
     ul.setAttribute('aria-busy', 'false');
     ul.innerHTML = '';
+
     if (!list.branches.length) {
       const li = document.createElement('li');
       li.innerHTML =
         '<div class="empty-state" style="width:100%">' +
         '<span class="icon" aria-hidden="true">' + ICONS.inbox + '</span>' +
         '<div>No topic branches yet.</div>' +
-        '<div class="hint">Click \u201cStart branch\u201d above to create one.</div>' +
+        '<div class="hint">Click “Start branch” above to create one.</div>' +
         '</div>';
       ul.appendChild(li);
       return;
     }
+
     list.branches.forEach((b, i) => {
       const li = document.createElement('li');
-      li.style.animationDelay = Math.min(i * 25, 200) + 'ms';
-      const branchIcon = document.createElement('span');
-      branchIcon.className = 'icon branch-icon';
-      branchIcon.setAttribute('aria-hidden', 'true');
-      branchIcon.innerHTML = ICONS.gitBranch;
-      const nameSpan = document.createElement('span');
-      nameSpan.className = 'branch-name';
-      nameSpan.textContent = b.shortName;
+      li.style.animationDelay = Math.min(i * 28, 220) + 'ms';
+
+      const isCurrent = currentBranch &&
+        (b.branch === currentBranch || b.shortName === currentBranch);
+      if (isCurrent) li.classList.add('is-current');
+
       const typeBadge = document.createElement('span');
       typeBadge.className = 'type-badge';
       typeBadge.style.setProperty('--gw-type-color', typeColor(b.type));
       typeBadge.textContent = b.type;
+
+      const branchIcon = document.createElement('span');
+      branchIcon.className = 'icon branch-icon';
+      branchIcon.setAttribute('aria-hidden', 'true');
+      branchIcon.innerHTML = ICONS.gitBranch;
+
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'branch-name';
+      nameSpan.textContent = b.shortName;
+
       const spacer = document.createElement('span');
       spacer.className = 'spacer';
+
       const rowActions = document.createElement('span');
       rowActions.className = 'row-actions';
+
       const checkoutBtn = document.createElement('button');
       checkoutBtn.className = 'small';
       checkoutBtn.textContent = 'Checkout';
-      checkoutBtn.addEventListener('click', () => vscode.postMessage({ type: 'checkout', branch: b.branch }));
+      checkoutBtn.addEventListener('click', () =>
+        vscode.postMessage({ type: 'checkout', branch: b.branch })
+      );
+
       const finishBtn = document.createElement('button');
       finishBtn.className = 'small';
-      finishBtn.textContent = 'Finish\u2026';
-      finishBtn.addEventListener('click', () => vscode.postMessage({ type: 'finish', branch: b.branch }));
-      rowActions.append(checkoutBtn, finishBtn);
+      finishBtn.textContent = 'Finish…';
+      finishBtn.addEventListener('click', () =>
+        vscode.postMessage({ type: 'finish', branch: b.branch })
+      );
 
+      rowActions.append(checkoutBtn, finishBtn);
       li.append(typeBadge, branchIcon, nameSpan, spacer, rowActions);
       ul.appendChild(li);
     });
@@ -528,7 +856,7 @@ export class GitweDashboardPanel {
         hideBanner();
         renderOverview(msg.overview);
         renderDoctor(msg.doctor);
-        renderBranches(msg.list);
+        renderBranches(msg.list, msg.overview?.currentBranch);
         break;
       case 'notInstalled':
         showBanner('gitwe is not installed: ' + msg.message, true);
@@ -549,11 +877,8 @@ export class GitweDashboardPanel {
   }
 
   /**
-   * Inline Phosphor-style (outline, 20px viewBox) SVG icons, chosen per the
-   * ui-ux-pro-max `icons` domain (git-branch, check/check-circle/x-circle/
-   * warning/info/clock for status, plus a few UI glyphs). Inlined rather than
-   * loaded from a CDN so the panel's strict `default-src 'none'` CSP is
-   * unaffected — no new script/style/img sources are introduced.
+   * Inline Phosphor-style (outline) SVG icons — ui-ux-pro-max icons domain.
+   * Inlined for strict CSP (default-src 'none').
    */
   private static readonly ICONS = {
     gitBranch:

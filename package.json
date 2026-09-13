@@ -1,9 +1,9 @@
 {
-  "name": "gitwe-vscode",
-  "displayName": "gitwe — Git Workflow Engine",
+  "name": "gitwe-vsce",
+  "displayName": "gitwe » Git Workflow Engine",
   "description": "Run and visualize your gitwe branching workflow (start/finish/update/publish, topic-branch tree, health checks) right inside VS Code.",
   "version": "0.2.1",
-  "publisher": "gitwe",
+  "publisher": "idmdakhi",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -325,10 +325,11 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run build",
-    "build": "node esbuild.js --production",
+    "build": "npm run clean && node esbuild.js --production",
     "watch": "node esbuild.js --watch",
     "typecheck": "tsc --noEmit -p ./",
-    "package": "vsce package"
+    "package": "vsce package",
+    "clean": "node -e \"import('node:fs').then(fs=>fs.rmSync('dist',{recursive:true,force:true}))\""
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
